@@ -23,23 +23,25 @@ deployment which can be used for logging.
 ```none
 docker volume create --name orca-elasticsearch-data
 
+# The latest tag is not supported by some repositories. Set a specific version number tag e.g. "6.4.2" here.
+TAG=6.4.2
 docker container run -d \
     --name elasticsearch \
     -v orca-elasticsearch-data:/usr/share/elasticsearch/data \
-    elasticsearch elasticsearch -Enetwork.host=0.0.0.0
+    elasticsearch:${TAG} elasticsearch -Enetwork.host=0.0.0.0
 
 docker container run -d \
     -p 514:514 \
     --name logstash \
     --link elasticsearch:es \
-    logstash \
+    logstash:${TAG} \
     sh -c "logstash -e 'input { syslog { } } output { stdout { } elasticsearch { hosts => [ \"es\" ] } } filter { json { source => \"message\" } }'"
 
 docker container run -d \
     --name kibana \
     --link elasticsearch:elasticsearch \
     -p 5601:5601 \
-    kibana
+    kibana:${TAG}
 ```
 
 Once you have these containers running, configure UCP to send logs to
